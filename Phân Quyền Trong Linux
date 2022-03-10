@@ -1,0 +1,104 @@
+[CHMOD] Hướng dẫn phân quyền file và thư mục trên Linux
+Đăng bởi: Admin | Lượt xem: 2660 | Chuyên mục: Linux/Server
+Trong linux, mỗi tập tin và thư mục đều được cấp các quyền đọc, ghi và thực thi khác nhau đối với từng người dùng. Điều này đảm bảo tính bảo mật cao cho hệ điều hành. Trong bài viết này VnCoder sẽ hướng dẫn các bạn sử dụng lệnh chmod để phân quyền tập tin và thư mục trên Linux
+
+
+
+Trong linux, hệ điều hành server được chia sẻ giữa nhiều user khác nhau, việc phân quyền cho từng user là rất cần thiết để đảm bảo an ninh, tính bảo mật và tránh xung đột giữa các user với nhau
+
+I. Thông tin của một tập tin, thư mục
+
+Để xem cấu trúc thông tin của một tập tin, thư mục, chúng ta gõ lệnh sau:
+
+# ls -al
+Ý nghĩa của từng chỉ số
+
+-rw-r--r--     1     root   root     0 Mar  6 21:04 .autofsck
+-rw-r--r--     1     root   root     0 Dec  2 11:41 .autorelabel
+dr-xr-xr-x.    2     root   root  4096 Mar  6 21:06 bin
+dr-xr-xr-x.    4     root   root  4096 Dec  2 11:38 boot
+__________________________________________
+^ ^  ^  ^      ^      ^      ^    ^      ^-- Ngày tháng tạo ra file và tên file
+| |  |  |      |      |      |    |
+| |  |  |      |      |      |    \--- Dung lượng của file/folder
+| |  |  |      |      |      \-------- Tên group sở hữu
+| |  |  |      |      \--------------- Tên user sở hữu
+| |  |  |      \---------------------- Hard link, thể hiện nhiều file hoặc thư mục có cùng sử dụng chung inode
+| |  |  |
+| \--\--\----------------------------- Các chỉ số phân quyền
+\------------------------------------- Loại file (chữ d nghĩa là thư mục)
+II. Phân quyền cho tập tin và thư mục
+
+Linux có 3 quyền cơ bản của 1 user và group đó là
+
+r (read) – quyền đọc file/folder
+w (write) – quyền ghi/sửa nội dung file/folder
+x (execute) – quyền thực thi (truy cập) thư mục. Đối với thư mục thì bạn cần phải có quyền execute thì mới dùng lệnh cd để truy cập vào được
+– (Deny) – Không có quyền
+
+Các quyền này cũng được đánh số nhất định
+
+r (read) – được biểu diễn bằng số 4.
+w (write) – được biểu diễn bằng số 2.
+x (execute) – được biểu diễn bằng số 1.
+– (Deny) – được biểu diễn bằng số 0
+Hệ thống phân quyền file linux
+
+Cấu trúc chỉ số phân quyền
+
+owner: Quyền của user mà chủ sở hữu của file này.
+group: Quyền của những users thuộc group mà chủ sở hữu của file này.
+other: Quyền của tất cả các user khác trên máy.
+Ví dụ file test1 có thông số như sau
+
+owner có quyền r+w+- =  4+2+0 = 6
+group có quyền  r+-+- = 4+0+0 = 4
+other có quyền  r+-+- = 4+0+0 = 4
+Thông số file test2 như sau
+
+owner có quyền r+w+x =  4+2+1 = 7
+group có quyền  r+-+x = 4+0+1 = 5
+other có quyền  r+-+x = 4+0+1 = 5
+Thông số file test3 như sau
+
+owner có quyền r+w+x =  4+2+1 = 7
+group có quyền  r+w+- = 4+2+0 = 6
+other có quyền  r+w+- = 4+2+0 = 6
+Chỉ số phân quyền của 3 file sẽ là test1=644, test2=755, test3=766
+
+Để thay đổi phân quyền cho file và thư mục ta sẽ dử dụng lệnh chmod
+
+# chmod  <tùy chọn> <chỉ số phân quyền> <tên tập tin/thư mục>
+Các tùy chọn
+
+-v : Hiển thị báo cáo sau khi chạy lệnh, mỗi lần đổi quyền là hiển thị một lần
+-c : Giống như trên, nhưng chỉ hiện khi nó đã làm xong tất cả.
+-R : Áp dụng luôn vào các file/folder nằm bên trong folder được phân quyền (chỉ áp dụng cho thư mục)
+Ví dụ: Bạn muốn phân quyền cho file test1
+
+# chmod 777 test1 <Cấp quyền truy cập đầy đủ cho mọi đối tượng người dùng.>
+# chmod 775 test1 <Cấp quyền truy cập đầy đủ cho chủ hệ thống và nhóm quản trị, đối tượng người dùng chỉ có quyền đọc (read) và chạy (execute) file.>
+# chmod 755 test1 <Cấp quyền truy cập đầy đủ cho chủ hệ thống, chỉ cho phép nhóm quản trị và đối tượng người dùng đọc và chạy các file trong thư mục.>
+# chmod 700 test1 <Chỉ cấp quyền truy cập đầy đủ cho chủ hệ thống và chặn truy cập với mọi đối tượng khác.>
+# chmod 500 test1 <Không cho phép nhóm quản trị và người dùng truy cập vào file trong thư mục, đồng thời giới hạn quyền chủ hệ thống chỉ đọc và chạy để tránh xóa và thay đổi các file trong thư mục này.>
+# chmod 660 test1 <Cho phép chủ hệ thống và nhóm quản trị đọc, sửa, xóa và ghi dữ liệu vào file, nhưng không phân quyền truy cập cho những người dùng khác.>
+III. Thay đổi chủ sở hữu cho tập tin và thư mục
+
+Mặc định  tập tin và thư mục đều có user group riêng của nó, nếu bạn muốn thay đổi bạn sẽ dùng lệnh chown
+
+# chown  <tùy chọn> <tên user>:<tên group>  <tên tập tin/thư mục>
+Các tùy chọn
+
+-v : Hiển thị báo cáo sau khi chạy lệnh, mỗi lần đổi chủ sở hữu là hiển thị một lần
+-c : Giống như trên, nhưng chỉ hiện khi nó đã làm xong tất cả.
+-R : Áp dụng luôn vào các file/folder nằm bên trong folder được đổi chủ (chỉ áp dụng cho thư mục)
+Ví dụ: Bạn muốn thay đổi chủ sở hữu cho file test1
+
+# chown user1:group1 test1   <Thay đổi cả user và group cho test1>
+# chown user1 test1         <Thay đổi user cho test1>
+# chown :group1 test1        <Thay đổi group cho test1>
+Tổng kết
+
+Trong bài viết mình đã giải thích cho các bạn cơ chế phân quyền file và thư mục trong linux. Đồng thời sử dụng các lệnh chmod và chown để thay đổi phân quyền và chủ sở hữu của tập tin và thư mục. Hi vọng rằng với bài viết này của mình các bạn đã có thể hiểu rõ hơn về cách phân quyền cho tập tin và thư mục. Hẹn gặp lại các bạn trong các bài tiếp theo. Chúc các bạn thành công !
+
+Từ khoá: phân quyền linux, quản lý file linux, tập tin linux, cách dùng lệnh chmod, cách dùng lệnh chown, cú pháp chmod, linux file permission, thay đổi quyền ubuntu, chmod centos
